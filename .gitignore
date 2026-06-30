@@ -483,5 +483,5 @@ $RECYCLE.BIN/
 
 # python dependencies
 .venv
-.vevn_cpu
+.venv_cpu
 LoadedModels
