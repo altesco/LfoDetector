@@ -75,7 +75,15 @@ public partial class MainVM : ViewModelBase
     {
         if (ImagePath is null || ModelPath is null)
             return;
-        
+
+        var options = new YoloPredictorOptions()
+        {
+            Configuration = new()
+            {
+                Confidence = 0.1f
+            }
+        };
+
         using var predictor = new YoloPredictor(ModelPath);
         using var image = await Image.LoadAsync(ImagePath);   
         
