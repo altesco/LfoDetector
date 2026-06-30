@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 .venv
 .venv_cpu
 LoadedModels
+
+# vscode files
+.vscode

@@ -15,6 +15,25 @@
         <vm:MainVM/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid>
+        <StackPanel 
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center" 
+            Spacing="4">
+            <Image Source="{Binding ActiveImage}"/>
+            <Button 
+                Content="Загрузить изображение" 
+                Command="{Binding LoadImageCommand}" 
+                HorizontalAlignment="Center"/>
+            <Button 
+                Content="Загрузить модель" 
+                Command="{Binding LoadModelCommand}"
+                HorizontalAlignment="Center"/>
+            <Button 
+                Content="Найти бпла" 
+                Command="{Binding DetectCommand}"
+                HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
 
 </Window>
