@@ -25,7 +25,8 @@ public partial class MainVM : ViewModelBase
     public string? ImagePath { get; set; }
     public string? ModelPath { get; set; }
 
-    public static readonly HttpClient Client = new HttpClient();
+    public readonly ConfigurationVM Config = new();
+    public static readonly HttpClient Client = new ();
 
     [RelayCommand]
     private async Task LoadImage()
@@ -41,7 +42,7 @@ public partial class MainVM : ViewModelBase
             Title = "Выберите изображение или видео",
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("Все медиафайлы") { Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.mp4", "*.avi", "*.mkv", "*.mov" } }
+                new FilePickerFileType("Все медиафайлы") { Patterns = ["*.jpg", "*.jpeg", "*.png", "*.mp4", "*.avi", "*.mkv", "*.mov"] }
             }
         };
 
@@ -154,7 +155,11 @@ public partial class MainVM : ViewModelBase
         {
             Configuration = new()
             {
-                Confidence = 0.15f 
+                Confidence = (float)Config.Confidence,
+                KeepAspectRatio = true,
+                SuppressParallelInference = Config.SuppressParallelInference,
+                IoU = (float)Config.IoU,
+                ApplyAutoOrient = Config.ApplyAutoOrient
             }
         };
 
