@@ -28,6 +28,11 @@ public partial class MainVM : ViewModelBase
     public ConfigurationVM Config { get; set; } = new();
     public static readonly HttpClient Client = new ();
 
+    [ObservableProperty] private bool _isSidebarOpen;
+
+    [RelayCommand]
+    private void SwitchSidebar() => IsSidebarOpen = !IsSidebarOpen;
+
     [RelayCommand]
     private async Task LoadImage()
     {
