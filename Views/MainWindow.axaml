@@ -15,29 +15,110 @@
         <vm:MainVM/>
     </Design.DataContext>
 
-    <Grid>
-        <StackPanel 
-            VerticalAlignment="Center" 
-            HorizontalAlignment="Center" 
-            Spacing="4">
+    <Grid ColumnDefinitions="Auto,*">
+        <Border Padding="8">
+            <Grid RowDefinitions="Auto,*">
+                <TextBlock 
+                    Text="Конфигурация" 
+                    FontSize="18" 
+                    FontWeight="Bold"/>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel>
+                        <TextBlock Text="Порог уверенности"/>
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
+                            <Slider
+                                Value="{Binding Config.Confidence, Mode=TwoWay}"
+                                Maximum="1.00"
+                                Minimum="0.00"
+                                TickFrequency="0.01"
+                                IsSnapToTickEnabled="True"
+                                Margin="0,0,8,0"/>
+                            <TextBlock 
+                                Grid.Column="1"      
+                                Text="{Binding Config.Confidence, StringFormat='\{0:0.00\}'}"
+                                VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Text="Порог пересечения зон" />
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
+                            <Slider
+                                Value="{Binding Config.IoU, Mode=TwoWay}"
+                                Maximum="1.00"
+                                Minimum="0.00"
+                                TickFrequency="0.01"
+                                IsSnapToTickEnabled="True"
+                                Margin="0,0,8,0" />
+                            <TextBlock
+                                Grid.Column="1"                                
+                                Text="{Binding Config.IoU, StringFormat='\{0:0.00\}'}" 
+                                VerticalAlignment="Center"/>
+                        </Grid>
+                        
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock 
+                                Text="Автоматическая ориентация"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0"/>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                IsChecked="{Binding Config.ApplyAutoOrient, Mode=TwoWay}"
+                                OnContent="{x:Null}"
+                                OffContent="{x:Null}"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock
+                                Text="Запрет параллельного вывода"
+                                HorizontalAlignment="Left" 
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0"/>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                IsChecked="{Binding Config.SuppressParallelInference, Mode=TwoWay}" 
+                                OnContent="{x:Null}"
+                                OffContent="{x:Null}"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock
+                                Text="Использовать GPU"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center" 
+                                Margin="0,0,16,0"/>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                IsChecked="{Binding Config.IsGpu, Mode=TwoWay}" 
+                                OnContent="{x:Null}" 
+                                OffContent="{x:Null}"/>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        <StackPanel
+VerticalAlignment="Center"
+HorizontalAlignment="Center"
+Spacing="4"
+Grid.Column="1">
 			<Image Source="{Binding ActiveImage}"
-                   MaxHeight="400"
-                   MaxWidth="600"
-                   Stretch="Uniform"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
-            <Button 
-                Content="Загрузить изображение" 
-                Command="{Binding LoadImageCommand}" 
-                HorizontalAlignment="Center"/>
-            <Button 
-                Content="Загрузить модель" 
-                Command="{Binding LoadModelCommand}"
-                HorizontalAlignment="Center"/>
-            <Button 
-                Content="Найти бпла" 
-                Command="{Binding DetectCommand}"
-                HorizontalAlignment="Center"/>
+MaxHeight="400"
+MaxWidth="600"
+Stretch="Uniform"
+HorizontalAlignment="Center"
+VerticalAlignment="Center" />
+            <Button
+Content="Загрузить изображение"
+Command="{Binding LoadImageCommand}"
+HorizontalAlignment="Center" />
+            <Button
+Content="Загрузить модель"
+Command="{Binding LoadModelCommand}"
+HorizontalAlignment="Center" />
+            <Button
+Content="Найти бпла"
+Command="{Binding DetectCommand}"
+HorizontalAlignment="Center" />
         </StackPanel>
     </Grid>
 

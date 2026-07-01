@@ -8,5 +8,6 @@ public partial class ConfigurationVM : ViewModelBase
     [ObservableProperty] private double _ioU;
     [ObservableProperty] private bool _applyAutoOrient;
     [ObservableProperty] private bool _suppressParallelInference;
+    [ObservableProperty] private bool _isGpu;
 }
 

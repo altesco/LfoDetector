@@ -25,7 +25,7 @@ public partial class MainVM : ViewModelBase
     public string? ImagePath { get; set; }
     public string? ModelPath { get; set; }
 
-    public readonly ConfigurationVM Config = new();
+    public ConfigurationVM Config { get; set; } = new();
     public static readonly HttpClient Client = new ();
 
     [RelayCommand]
