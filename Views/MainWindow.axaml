@@ -12,19 +12,19 @@
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainVM/>
+        <vm:MainVM />
     </Design.DataContext>
 
     <Grid ColumnDefinitions="Auto,*">
         <Border Padding="8">
             <Grid RowDefinitions="Auto,*">
-                <TextBlock 
-                    Text="Конфигурация" 
-                    FontSize="18" 
-                    FontWeight="Bold"/>
+                <TextBlock
+                    Text="Конфигурация"
+                    FontSize="18"
+                    FontWeight="Bold" />
                 <ScrollViewer Grid.Row="1">
                     <StackPanel>
-                        <TextBlock Text="Порог уверенности"/>
+                        <TextBlock Text="Порог уверенности" />
                         <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
                             <Slider
                                 Value="{Binding Config.Confidence, Mode=TwoWay}"
@@ -32,11 +32,11 @@
                                 Minimum="0.00"
                                 TickFrequency="0.01"
                                 IsSnapToTickEnabled="True"
-                                Margin="0,0,8,0"/>
-                            <TextBlock 
-                                Grid.Column="1"      
+                                Margin="0,0,8,0" />
+                            <TextBlock
+                                Grid.Column="1"
                                 Text="{Binding Config.Confidence, StringFormat='\{0:0.00\}'}"
-                                VerticalAlignment="Center"/>
+                                VerticalAlignment="Center" />
                         </Grid>
 
                         <TextBlock Text="Порог пересечения зон" />
@@ -49,77 +49,83 @@
                                 IsSnapToTickEnabled="True"
                                 Margin="0,0,8,0" />
                             <TextBlock
-                                Grid.Column="1"                                
-                                Text="{Binding Config.IoU, StringFormat='\{0:0.00\}'}" 
-                                VerticalAlignment="Center"/>
+                                Grid.Column="1"
+                                Text="{Binding Config.IoU, StringFormat='\{0:0.00\}'}"
+                                VerticalAlignment="Center" />
                         </Grid>
-                        
+
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock 
+                            <TextBlock
                                 Text="Автоматическая ориентация"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Margin="0,0,16,0"/>
+                                Margin="0,0,16,0" />
                             <ToggleSwitch
                                 Grid.Column="1"
                                 IsChecked="{Binding Config.ApplyAutoOrient, Mode=TwoWay}"
                                 OnContent="{x:Null}"
-                                OffContent="{x:Null}"/>
+                                OffContent="{x:Null}" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock
                                 Text="Запрет параллельного вывода"
-                                HorizontalAlignment="Left" 
+                                HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Margin="0,0,16,0"/>
+                                Margin="0,0,16,0" />
                             <ToggleSwitch
                                 Grid.Column="1"
-                                IsChecked="{Binding Config.SuppressParallelInference, Mode=TwoWay}" 
+                                IsChecked="{Binding Config.SuppressParallelInference, Mode=TwoWay}"
                                 OnContent="{x:Null}"
-                                OffContent="{x:Null}"/>
+                                OffContent="{x:Null}" />
                         </Grid>
 
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock
                                 Text="Использовать GPU"
                                 HorizontalAlignment="Left"
-                                VerticalAlignment="Center" 
-                                Margin="0,0,16,0"/>
+                                VerticalAlignment="Center"
+                                Margin="0,0,16,0" />
                             <ToggleSwitch
                                 Grid.Column="1"
-                                IsChecked="{Binding Config.IsGpu, Mode=TwoWay}" 
-                                OnContent="{x:Null}" 
-                                OffContent="{x:Null}"/>
+                                IsChecked="{Binding Config.IsGpu, Mode=TwoWay}"
+                                OnContent="{x:Null}"
+                                OffContent="{x:Null}" />
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
         </Border>
         <StackPanel
-VerticalAlignment="Center"
-HorizontalAlignment="Center"
-Spacing="4"
-Grid.Column="1">
-			<Image Source="{Binding ActiveImage}"
-MaxHeight="400"
-MaxWidth="600"
-Stretch="Uniform"
-HorizontalAlignment="Center"
-VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            Spacing="4"
+            Grid.Column="1">
+            <Grid MaxHeight="400">
+                <LucideIcon
+                    Kind="Drone"
+                    Size="300"
+                    StrokeWidth="0.6"/>
+                <Image
+                    Source="{Binding ActiveImage}"
+                    Stretch="Uniform"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Grid>
             <Button
-Content="Загрузить изображение"
-Command="{Binding LoadImageCommand}"
-HorizontalAlignment="Center" />
+                Content="Загрузить изображение"
+                Command="{Binding LoadImageCommand}"
+                HorizontalAlignment="Center" />
             <Button
-Content="Загрузить модель"
-Command="{Binding LoadModelCommand}"
-HorizontalAlignment="Center" />
+                Content="Загрузить модель"
+                Command="{Binding LoadModelCommand}"
+                HorizontalAlignment="Center" />
             <Button
-Content="Найти бпла"
-Command="{Binding DetectCommand}"
-HorizontalAlignment="Center" />
+                Content="Найти бпла"
+                Command="{Binding DetectCommand}"
+                HorizontalAlignment="Center" />
         </StackPanel>
     </Grid>
 
 </Window>
+
