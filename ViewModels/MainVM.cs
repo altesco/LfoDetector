@@ -11,6 +11,9 @@ using Avalonia.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using OpenCvSharp;
+using System.Collections.Generic;
 
 namespace LfoDetector.ViewModels;
 
@@ -35,18 +38,80 @@ public partial class MainVM : ViewModelBase
         var options = new FilePickerOpenOptions()
         {
             AllowMultiple = false,
-            SuggestedFileType = new FilePickerFileType("Изображение")
+            Title = "Выберите изображение или видео",
+            FileTypeFilter = new[]
             {
-                Patterns = ["*.jpg", "*.jpeg", "*.png"]
+                new FilePickerFileType("Все медиафайлы") { Patterns = new[] { "*.jpg", "*.jpeg", "*.png", "*.mp4", "*.avi", "*.mkv", "*.mov" } }
             }
         };
-        var images = await storageProvider.OpenFilePickerAsync(options);
-        if (images.Count <= 0)
+
+        var files = await storageProvider.OpenFilePickerAsync(options);
+        if (files.Count <= 0)
             return;
-        
-        ImagePath = images[0].Path.LocalPath;
-        await using var stream = await images[0].OpenReadAsync();
-        ActiveImage = new Bitmap(stream);
+
+        string filePath = files[0].Path.LocalPath;
+        string extension = Path.GetExtension(filePath).ToLower();
+
+        var imageExtensions = new List<string> { ".jpg", ".jpeg", ".png" };
+        ImagePath = filePath;
+        if (imageExtensions.Contains(extension))
+        {
+            // --- ЛОГИКА ДЛЯ КАРТИНКИ ---
+            
+            await using var stream = await files[0].OpenReadAsync();
+            ActiveImage = new Bitmap(stream);
+        }
+        else
+        {
+            //мне чисто для себя нужно было запустить видео тут
+            //поменяешь как надо
+            _ = Task.Run(() => PlayVideoInSeparateWindow(filePath));
+        }
+    }
+
+    //Метод для запуска видео в отдельном окне
+    private void PlayVideoInSeparateWindow(string videoPath)
+    {
+        using var capture = new VideoCapture(videoPath);
+        if (!capture.IsOpened()) return;
+
+        // Создаем отдельное именованное окно операционной системы
+        string windowName = "Просмотр видео (Пробел - Пауза, ESC - Выход)";
+        Cv2.NamedWindow(windowName, WindowFlags.Normal);
+
+        using var frame = new Mat();
+        bool isPaused = false;
+
+        while (true)
+        {
+            if (!isPaused)
+            {
+                if (!capture.Read(frame) || frame.Empty())
+                    break; // Конец видео
+
+                Cv2.ImShow(windowName, frame);
+            }
+
+            int key = Cv2.WaitKey(30);
+
+            if (key == 27) // Клавиша ESC — закрыть окно
+            {
+                break;
+            }
+            else if (key == 32) // Клавиша Пробел — поставить на паузу / снять с паузы
+            {
+                isPaused = !isPaused;
+            }
+
+            // Проверяем, не закрыл ли пользователь окно крестиком вручную
+            if (Cv2.GetWindowProperty(windowName, WindowPropertyFlags.Visible) < 1)
+            {
+                break;
+            }
+        }
+
+        // Уничтожаем окно при выходе из цикла
+        Cv2.DestroyWindow(windowName);
     }
 
     [RelayCommand]
@@ -93,26 +158,94 @@ public partial class MainVM : ViewModelBase
     [RelayCommand]
     private async Task Detect()
     {
-        if (ImagePath is null || ModelPath is null)
+        if (ModelPath is null || ImagePath is null)
+        {
+            Result = "Сначала выберите модель и медиафайл!";
             return;
+        }
 
         var options = new YoloPredictorOptions()
         {
             Configuration = new()
             {
-                Confidence = 0.1f
+                Confidence = 0.15f 
             }
         };
 
-        using var predictor = new YoloPredictor(ModelPath, options);
-        using var image = await Image.LoadAsync(ImagePath);   
-        
-        var result = await predictor.DetectAsync(image);
-        using var plotted = await result.PlotImageAsync(image);
+        // Проверяем, что выбрано: картинка или видео
+        string extension = Path.GetExtension(ImagePath).ToLower();
+        var imageExtensions = new List<string> { ".jpg", ".jpeg", ".png" };
 
-        using var ms = new MemoryStream();
-        await plotted.SaveAsPngAsync(ms);
-        ms.Position = 0;
-        ActiveImage = new Bitmap(ms);
+        //для картинки
+        if (imageExtensions.Contains(extension))
+        {
+            // --- ОБРАБОТКА ОДНОЧНОЙ КАРТИНКИ ---
+            using var predictor = new YoloPredictor(ModelPath, options);
+            using var image = await Image.LoadAsync<Rgb24>(ImagePath);
+
+            var result = await predictor.DetectAsync(image);
+            using var plotted = await result.PlotImageAsync(image);
+
+            using var ms = new MemoryStream();
+            await plotted.SaveAsPngAsync(ms);
+            ms.Position = 0;
+
+            ActiveImage = new Bitmap(ms);
+           
+        }
+        //для видоса
+        //Но он долго робит прям оч и не очень хорошо
+        else
+        {
+
+            await Task.Run(async () =>
+            {
+                using var predictor = new YoloPredictor(ModelPath, options);
+                using var capture = new VideoCapture(ImagePath);
+                using var matFrame = new Mat();
+
+                if (!capture.IsOpened())
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                        Result = "Ошибка: Не удалось открыть видеофайл.";
+                    });
+                    return;
+                }
+
+                while (capture.Read(matFrame) && !matFrame.Empty())
+                {
+                    using var rgbFrame = new Mat();
+                    Cv2.CvtColor(matFrame, rgbFrame, ColorConversionCodes.BGR2RGB);
+
+                    using var resizedFrame = new Mat();
+
+                    var newSize = new OpenCvSharp.Size(640, 480);
+                    Cv2.Resize(rgbFrame, resizedFrame, newSize, 0, 0, InterpolationFlags.Linear);
+
+                    byte[] imageBytes = resizedFrame.ToBytes(".jpg");
+                    using var image = Image.Load<Rgb24>(imageBytes);
+
+
+                    var result = await predictor.DetectAsync(image);
+                    using var plotted = await result.PlotImageAsync(image);
+
+                    using var ms = new MemoryStream();
+                    await plotted.SaveAsJpegAsync(ms); 
+                    ms.Position = 0;
+
+  
+                    var bitmap = new Bitmap(ms);
+
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        ActiveImage = bitmap;
+                       
+                    });
+
+                    //await Task.Delay(1); // хз нужна ли задержка тут
+                }
+
+            });
+        }
     }
 }

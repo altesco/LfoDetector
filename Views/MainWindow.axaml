@@ -20,7 +20,12 @@
             VerticalAlignment="Center" 
             HorizontalAlignment="Center" 
             Spacing="4">
-            <Image Source="{Binding ActiveImage}"/>
+			<Image Source="{Binding ActiveImage}"
+                   MaxHeight="400"
+                   MaxWidth="600"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
             <Button 
                 Content="Загрузить изображение" 
                 Command="{Binding LoadImageCommand}" 
