@@ -69,9 +69,9 @@ public partial class MainVM : ViewModelBase
         }
         else
         {
-            //мне чисто для себя нужно было запустить видео тут
-            //поменяешь как надо
-            _ = Task.Run(() => PlayVideoInSeparateWindow(filePath));
+            //Если врубать видео так, то оно с результатов пересекается
+            //
+            //_ = Task.Run(() => PlayVideoInSeparateWindow(filePath));
         }
     }
 
@@ -158,6 +158,7 @@ public partial class MainVM : ViewModelBase
 
         var options = new YoloPredictorOptions()
         {
+            CudaDeviceId = 0,
             Configuration = new()
             {
                 Confidence = (float)Config.Confidence,
@@ -238,7 +239,6 @@ public partial class MainVM : ViewModelBase
                        
                     });
 
-                    //await Task.Delay(1); // хз нужна ли задержка тут
                 }
 
             });
