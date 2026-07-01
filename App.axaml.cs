@@ -1,6 +1,7 @@
+using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
@@ -25,7 +26,9 @@ public partial class App : Application
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
 
-            ServerService.StartServer("путь/к/серверу");
+            ServerService.StartServer(
+                Path.Combine(AppContext.BaseDirectory, "Services", "model_loader.py")
+            );
 
             desktop.MainWindow = new MainWindow
             {

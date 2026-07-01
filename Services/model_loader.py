@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 from huggingface_hub import hf_hub_download
 from fastapi import FastAPI
-from fastapi.responses import Response
+from fastapi.responses import Response, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
