@@ -75,43 +75,29 @@ public partial class MainVM : ViewModelBase
         using var capture = new VideoCapture(videoPath);
         if (!capture.IsOpened()) return;
 
-        // Создаем отдельное именованное окно операционной системы
-        string windowName = "Просмотр видео (Пробел - Пауза, ESC - Выход)";
-        Cv2.NamedWindow(windowName, WindowFlags.Normal);
-
         using var frame = new Mat();
-        bool isPaused = false;
 
-        while (true)
+        // Вместо Cv2.NamedWindow крутим бесконечный цикл чтения кадров
+        while (capture.Read(frame) && !frame.Empty())
         {
-            if (!isPaused)
-            {
-                if (!capture.Read(frame) || frame.Empty())
-                    break; // Конец видео
+            // Конвертируем BGR (OpenCV) в RGB (ImageSharp/Avalonia)
+            using var rgbFrame = new Mat();
+            Cv2.CvtColor(frame, rgbFrame, ColorConversionCodes.BGR2RGB);
 
-                Cv2.ImShow(windowName, frame);
-            }
+            // Переводим в байты и создаем Bitmap для Avalonia
+            byte[] imageBytes = rgbFrame.ToBytes(".jpg");
+            using var ms = new MemoryStream(imageBytes);
+            var bitmap = new Bitmap(ms);
 
-            int key = Cv2.WaitKey(30);
+            // Отправляем кадр прямиком в UI-поток на твой Image контроль!
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                ActiveImage = bitmap; // Свойство из твоей MainVM
+            });
 
-            if (key == 27) // Клавиша ESC — закрыть окно
-            {
-                break;
-            }
-            else if (key == 32) // Клавиша Пробел — поставить на паузу / снять с паузы
-            {
-                isPaused = !isPaused;
-            }
-
-            // Проверяем, не закрыл ли пользователь окно крестиком вручную
-            if (Cv2.GetWindowProperty(windowName, WindowPropertyFlags.Visible) < 1)
-            {
-                break;
-            }
+            // Задержка ~30 FPS, чтобы видео не летело на первой космической скорости
+            Task.Delay(33).Wait();
         }
-
-        // Уничтожаем окно при выходе из цикла
-        Cv2.DestroyWindow(windowName);
     }
 
     [RelayCommand]
