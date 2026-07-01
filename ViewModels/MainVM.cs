@@ -1,5 +1,7 @@
-﻿using Compunet.YoloSharp;
+﻿using System;
+using Compunet.YoloSharp;
 using System.IO;
+using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
@@ -19,6 +21,8 @@ public partial class MainVM : ViewModelBase
     
     public string? ImagePath { get; set; }
     public string? ModelPath { get; set; }
+
+    public static readonly HttpClient Client = new HttpClient();
 
     [RelayCommand]
     private async Task LoadImage()
@@ -56,18 +60,34 @@ public partial class MainVM : ViewModelBase
         var options = new FilePickerOpenOptions()
         {
             AllowMultiple = false,
-            SuggestedFileType = new FilePickerFileType("Файл .onnx")
+            SuggestedFileType = new FilePickerFileType("Файлы .onnx и .pt")
             {
-                Patterns = ["*.onnx"] 
-                // тут можно потом сделать так чтобы еще можно было выбирать .pt
-                // и при загрузке будет конвертация через сервер model_loader.py
+                Patterns = ["*.onnx", "*.pt"] 
             }
         };
         var models = await storageProvider.OpenFilePickerAsync(options);
         if (models.Count <= 0)
             return;
 
-        ModelPath = models[0].Path.LocalPath;
+        var path = models[0].Path.LocalPath;
+        var extension = Path.GetExtension(path).ToLowerInvariant();
+        if (extension == ".onnx")
+        {
+            ModelPath = path;
+            return;
+        }
+
+        try
+        {
+            var url = $"http://127.0.0.1:5050/convert_model?file_path={path}";
+            var response = await Client.PostAsync(url, null);
+            if (response.IsSuccessStatusCode)
+                ModelPath = await response.Content.ReadAsStringAsync();
+        }
+        catch(HttpRequestException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     [RelayCommand]
