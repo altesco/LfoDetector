@@ -84,7 +84,7 @@ public partial class MainVM : ViewModelBase
             }
         };
 
-        using var predictor = new YoloPredictor(ModelPath);
+        using var predictor = new YoloPredictor(ModelPath, options);
         using var image = await Image.LoadAsync(ImagePath);   
         
         var result = await predictor.DetectAsync(image);
