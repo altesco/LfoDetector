@@ -19,13 +19,34 @@ namespace LfoDetector.ViewModels;
 
 public partial class MainVM : ViewModelBase
 {
-    [ObservableProperty] private string _result = string.Empty;
     [ObservableProperty] private Bitmap? _activeImage;
     [ObservableProperty] private string? _error;
     [ObservableProperty] private int? _currentFrame;
+    [ObservableProperty] private bool _isVideoLoaded;
+    [ObservableProperty] private bool _isPaused;
+    [ObservableProperty] private bool _isVideoEnded = true;
     
-    public string? ImagePath { get; set; }
-    public string? ModelPath { get; set; }
+    public string? ImagePath
+    {
+        get;
+        set
+        {
+            field = value;
+            DetectCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string? ModelPath
+    {
+        get;
+        set
+        {
+            field = value;
+            DetectCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public bool CanDetect => ImagePath != null && ModelPath != null;
 
     public ConfigurationVM Config { get; set; } = new();
     public static readonly HttpClient Client = new ();
@@ -149,16 +170,14 @@ public partial class MainVM : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDetect))]
     private async Task Detect()
     {
         if (ModelPath is null || ImagePath is null)
-        {
-            Result = "Сначала выберите модель и медиафайл!";
             return;
-        }
 
         CurrentFrame = null;
+        IsVideoLoaded = false;
 
         var configuration = new YoloConfiguration
         {
@@ -198,6 +217,8 @@ public partial class MainVM : ViewModelBase
         //для видоса
         else
         {
+            IsVideoEnded = false;
+            IsVideoLoaded = true;
             await Task.Run(async () =>
             {
                 using var predictor = new YoloPredictor(ModelPath, options);
@@ -208,16 +229,24 @@ public partial class MainVM : ViewModelBase
                 {
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        Result = "Ошибка: Не удалось открыть видеофайл.";
+                        Error = "Ошибка: Не удалось открыть видеофайл.";
                     });
                     return;
                 }
 
                 CurrentFrame = 0;
 
-                while (capture.Read(matFrame) && !matFrame.Empty())
+                while (true)
                 {
-                    CurrentFrame++;
+                    if (IsPaused)
+                    {
+                        await Task.Delay(100);
+                        continue;
+                    }
+                    
+                    if (!capture.Read(matFrame) || matFrame.Empty())
+                        break;
+
                     // 1. Кодируем кадр в ультрабыстрый разжатый BMP (это мгновенно)
                     // OpenCV выдает BGR, ImageSharp сам корректно распарсит его из BMP заголовка
                     byte[] imageBytes = matFrame.ToBytes(".bmp");
@@ -236,10 +265,23 @@ public partial class MainVM : ViewModelBase
 
                     Avalonia.Threading.Dispatcher.UIThread.Post(() => { ActiveImage = bitmap; });
 
+                    CurrentFrame++;
+
                     // 4. Ограничиваем FPS (~30 кадров/сек), чтобы CPU успевал дышать
                     await Task.Delay(33);
                 }
+
+                IsVideoEnded = true;
             });
         }
+    }
+
+    [RelayCommand]
+    private void Pause()
+    {
+        if (IsVideoEnded)
+            DetectCommand.Execute(null);
+        else
+            IsPaused = !IsPaused;
     }
 }

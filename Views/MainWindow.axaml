@@ -15,6 +15,30 @@
         <vm:MainVM />
     </Design.DataContext>
 
+    <Window.Styles>
+        <Style Selector="Button.playing">
+            <Setter Property="Content">
+                <Template>
+                    <LucideIcon Kind="Pause" Size="16" />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="Button.paused">
+            <Setter Property="Content">
+                <Template>
+                    <LucideIcon Kind="Play" Size="16" />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="Button.video-ended">
+            <Setter Property="Content">
+                <Template>
+                    <LucideIcon Kind="RotateCcw" Size="16" />
+                </Template>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
     <Grid ColumnDefinitions="Auto,*">
         <Border Padding="8" IsVisible="{Binding IsSidebarOpen}">
             <Grid RowDefinitions="Auto,*">
@@ -24,7 +48,7 @@
                     FontWeight="Bold" 
                     Margin="40,4,0,8"/>
                 <ScrollViewer Grid.Row="1">
-                    <StackPanel>
+                    <StackPanel IsEnabled="{Binding IsVideoEnded}">
                         <TextBlock Text="Порог уверенности" />
                         <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
                             <Slider
@@ -93,7 +117,8 @@
                 <LucideIcon
                     Kind="Drone"
                     Size="300"
-                    StrokeWidth="0.6"/>
+                    StrokeWidth="0.6"
+                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}"/>
                 <Image
                     Source="{Binding ActiveImage}"
                     Stretch="Uniform"
@@ -101,7 +126,18 @@
                     VerticalAlignment="Center" />
             </Grid>
             <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap"/>
-            <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}"/>
+            <StackPanel 
+                Orientation="Horizontal" 
+                Spacing="6" 
+                IsVisible="{Binding IsVideoLoaded}"
+                HorizontalAlignment="Center">
+                <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}" />
+                <Button
+                    Command="{Binding PauseCommand}"
+                    Classes.playing="{Binding !IsPaused}"
+                    Classes.paused="{Binding IsPaused}"
+                    Classes.video-ended="{Binding IsVideoEnded}"/>
+            </StackPanel>
             <Button
                 Content="Загрузить изображение"
                 Command="{Binding LoadImageCommand}"
