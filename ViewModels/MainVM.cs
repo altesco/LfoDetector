@@ -69,9 +69,9 @@ public partial class MainVM : ViewModelBase
         }
         else
         {
-            //мне чисто для себя нужно было запустить видео тут
-            //поменяешь как надо
-            _ = Task.Run(() => PlayVideoInSeparateWindow(filePath));
+            //Если врубать видео так, то оно с результатов пересекается
+            //
+            //_ = Task.Run(() => PlayVideoInSeparateWindow(filePath));
         }
     }
 
@@ -183,13 +183,12 @@ public partial class MainVM : ViewModelBase
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"GPU упал с ошибкой, откат на CPU: {ex.Message}");
                 options = new YoloPredictorOptions
                 {
                     UseCuda = false,
                     Configuration = configuration
                 };
-
-                Console.WriteLine($"GPU нет: {ex.Message}");
             }
         }
         else
@@ -271,7 +270,6 @@ public partial class MainVM : ViewModelBase
                        
                     });
 
-                    //await Task.Delay(1); // хз нужна ли задержка тут
                 }
 
             });
