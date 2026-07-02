@@ -156,17 +156,50 @@ public partial class MainVM : ViewModelBase
             return;
         }
 
-        var options = new YoloPredictorOptions()
+        YoloPredictorOptions options;
+
+        var configuration = new YoloConfiguration
         {
-            Configuration = new()
-            {
-                Confidence = (float)Config.Confidence,
-                KeepAspectRatio = true,
-                SuppressParallelInference = Config.SuppressParallelInference,
-                IoU = (float)Config.IoU,
-                ApplyAutoOrient = Config.ApplyAutoOrient
-            }
+            Confidence = (float)Config.Confidence,
+            KeepAspectRatio = true,
+            SuppressParallelInference = Config.SuppressParallelInference,
+            IoU = (float)Config.IoU,
+            ApplyAutoOrient = Config.ApplyAutoOrient
         };
+
+        if (Config.IsGpu)
+        {
+            try
+            {
+                options = new YoloPredictorOptions
+                {
+                    UseCuda = true,
+                    CudaDeviceId = 0,
+                    Configuration = configuration
+                };
+
+                // тест
+                using var testPredictor = new YoloPredictor(ModelPath, options);
+            }
+            catch (Exception ex)
+            {
+                options = new YoloPredictorOptions
+                {
+                    UseCuda = false,
+                    Configuration = configuration
+                };
+
+                Console.WriteLine($"GPU нет: {ex.Message}");
+            }
+        }
+        else
+        {
+            options = new YoloPredictorOptions
+            {
+                UseCuda = false,
+                Configuration = configuration
+            };
+        }
 
         // Проверяем, что выбрано: картинка или видео
         string extension = Path.GetExtension(ImagePath).ToLower();
