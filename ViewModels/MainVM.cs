@@ -21,6 +21,7 @@ public partial class MainVM : ViewModelBase
 {
     [ObservableProperty] private string _result = string.Empty;
     [ObservableProperty] private Bitmap? _activeImage;
+    [ObservableProperty] private string? _error;
     
     public string? ImagePath { get; set; }
     public string? ModelPath { get; set; }
@@ -156,8 +157,6 @@ public partial class MainVM : ViewModelBase
             return;
         }
 
-        YoloPredictorOptions options;
-
         var configuration = new YoloConfiguration
         {
             Confidence = (float)Config.Confidence,
@@ -167,38 +166,10 @@ public partial class MainVM : ViewModelBase
             ApplyAutoOrient = Config.ApplyAutoOrient
         };
 
-        if (Config.IsGpu)
+        YoloPredictorOptions options = new YoloPredictorOptions
         {
-            try
-            {
-                options = new YoloPredictorOptions
-                {
-                    UseCuda = true,
-                    CudaDeviceId = 0,
-                    Configuration = configuration
-                };
-
-                // тест
-                using var testPredictor = new YoloPredictor(ModelPath, options);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"GPU упал с ошибкой, откат на CPU: {ex.Message}");
-                options = new YoloPredictorOptions
-                {
-                    UseCuda = false,
-                    Configuration = configuration
-                };
-            }
-        }
-        else
-        {
-            options = new YoloPredictorOptions
-            {
-                UseCuda = false,
-                Configuration = configuration
-            };
-        }
+            Configuration = configuration
+        };
 
         // Проверяем, что выбрано: картинка или видео
         string extension = Path.GetExtension(ImagePath).ToLower();
@@ -222,10 +193,8 @@ public partial class MainVM : ViewModelBase
            
         }
         //для видоса
-        //Но он долго робит прям оч и не очень хорошо
         else
         {
-
             await Task.Run(async () =>
             {
                 using var predictor = new YoloPredictor(ModelPath, options);
@@ -234,7 +203,8 @@ public partial class MainVM : ViewModelBase
 
                 if (!capture.IsOpened())
                 {
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() => {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
                         Result = "Ошибка: Не удалось открыть видеофайл.";
                     });
                     return;
@@ -242,36 +212,27 @@ public partial class MainVM : ViewModelBase
 
                 while (capture.Read(matFrame) && !matFrame.Empty())
                 {
-                    using var rgbFrame = new Mat();
-                    Cv2.CvtColor(matFrame, rgbFrame, ColorConversionCodes.BGR2RGB);
-
-                    using var resizedFrame = new Mat();
-
-                    var newSize = new OpenCvSharp.Size(640, 480);
-                    Cv2.Resize(rgbFrame, resizedFrame, newSize, 0, 0, InterpolationFlags.Linear);
-
-                    byte[] imageBytes = resizedFrame.ToBytes(".jpg");
+                    // 1. Кодируем кадр в ультрабыстрый разжатый BMP (это мгновенно)
+                    // OpenCV выдает BGR, ImageSharp сам корректно распарсит его из BMP заголовка
+                    byte[] imageBytes = matFrame.ToBytes(".bmp");
                     using var image = Image.Load<Rgb24>(imageBytes);
 
-
+                    // 2. Отправляем кадр в оригинальном соотношении сторон.
+                    // YoloSharp сам сделает правильный квадратный resize и padding, анкоры больше не упадут!
                     var result = await predictor.DetectAsync(image);
                     using var plotted = await result.PlotImageAsync(image);
 
+                    // 3. Переводим результат работы в Bitmap для Avalonia
                     using var ms = new MemoryStream();
-                    await plotted.SaveAsJpegAsync(ms); 
+                    await plotted.SaveAsJpegAsync(ms);
                     ms.Position = 0;
-
-  
                     var bitmap = new Bitmap(ms);
 
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-                    {
-                        ActiveImage = bitmap;
-                       
-                    });
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() => { ActiveImage = bitmap; });
 
+                    // 4. Ограничиваем FPS (~30 кадров/сек), чтобы CPU успевал дышать
+                    await Task.Delay(33);
                 }
-
             });
         }
     }

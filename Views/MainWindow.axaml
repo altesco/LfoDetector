@@ -80,19 +80,6 @@
                                 OnContent="{x:Null}"
                                 OffContent="{x:Null}" />
                         </Grid>
-
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock
-                                Text="Использовать GPU"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Margin="0,0,16,0" />
-                            <ToggleSwitch
-                                Grid.Column="1"
-                                IsChecked="{Binding Config.IsGpu, Mode=TwoWay}"
-                                OnContent="{x:Null}"
-                                OffContent="{x:Null}" />
-                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -113,6 +100,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center" />
             </Grid>
+            <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap"/>
             <Button
                 Content="Загрузить изображение"
                 Command="{Binding LoadImageCommand}"
