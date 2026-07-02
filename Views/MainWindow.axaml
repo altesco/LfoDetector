@@ -101,6 +101,7 @@
                     VerticalAlignment="Center" />
             </Grid>
             <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}"/>
             <Button
                 Content="Загрузить изображение"
                 Command="{Binding LoadImageCommand}"

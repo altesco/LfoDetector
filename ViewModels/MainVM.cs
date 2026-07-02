@@ -22,6 +22,7 @@ public partial class MainVM : ViewModelBase
     [ObservableProperty] private string _result = string.Empty;
     [ObservableProperty] private Bitmap? _activeImage;
     [ObservableProperty] private string? _error;
+    [ObservableProperty] private int? _currentFrame;
     
     public string? ImagePath { get; set; }
     public string? ModelPath { get; set; }
@@ -157,6 +158,8 @@ public partial class MainVM : ViewModelBase
             return;
         }
 
+        CurrentFrame = null;
+
         var configuration = new YoloConfiguration
         {
             Confidence = (float)Config.Confidence,
@@ -210,8 +213,11 @@ public partial class MainVM : ViewModelBase
                     return;
                 }
 
+                CurrentFrame = 0;
+
                 while (capture.Read(matFrame) && !matFrame.Empty())
                 {
+                    CurrentFrame++;
                     // 1. Кодируем кадр в ультрабыстрый разжатый BMP (это мгновенно)
                     // OpenCV выдает BGR, ImageSharp сам корректно распарсит его из BMP заголовка
                     byte[] imageBytes = matFrame.ToBytes(".bmp");
