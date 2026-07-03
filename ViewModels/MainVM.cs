@@ -34,6 +34,7 @@ public partial class MainVM : ViewModelBase
         set
         {
             field = value;
+            OnPropertyChanged(nameof(ImageName));
             DetectCommand.NotifyCanExecuteChanged();
         }
     }
@@ -44,9 +45,13 @@ public partial class MainVM : ViewModelBase
         set
         {
             field = value;
+            OnPropertyChanged(nameof(ModelName));
             DetectCommand.NotifyCanExecuteChanged();
         }
     }
+
+    public string ImageName => Path.GetFileName(ImagePath) ?? "Файл медиа";
+    public string ModelName => Path.GetFileName(ModelPath) ?? "Файл модели";
 
     public bool CanDetect => ImagePath != null && ModelPath != null;
 

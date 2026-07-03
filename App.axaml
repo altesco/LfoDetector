@@ -10,6 +10,41 @@
     </Application.DataTemplates>
   
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources
+                    x:Key="Light"
+                    ErrorText="#842426"
+                    RegionColor="#eef1f5"
+                    ListLow="#ced4de"
+                    ChromeLow="#eef1f5"
+                    ListMedium="#bfc7d4"
+                    ChromeMediumLow="#eaedf2"
+                    ChromeMedium="#e5e8ee"
+                    ChromeHigh="#dbdfe7"
+                    ChromeBlackHigh="#dbdfe7"
+                    BaseHigh="#4d5069"
+                    BaseMediumHigh="#696c82"
+                    BaseMedium="#84889a"
+                    BaseMediumLow="#a0a4b3"
+                    BaseLow="#bbbfcb" />
+                <ColorPaletteResources
+                    x:Key="Dark"
+                    ErrorText="#842426"
+                    RegionColor="#232332"
+                    ListLow="#2a2a3d"
+                    ListMedium="#32324a"
+                    ChromeLow="#232332"
+                    ChromeMediumLow="#21212e"
+                    ChromeMedium="#1e1e2a"
+                    ChromeHigh="#181821"
+                    ChromeBlackHigh="#181821"
+                    BaseHigh="#c5cff5"
+                    BaseMediumHigh="#a1a9ca"
+                    BaseMedium="#7d829e"
+                    BaseMediumLow="#595c72"
+                    BaseLow="#343546" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
     </Application.Styles>
 </Application>

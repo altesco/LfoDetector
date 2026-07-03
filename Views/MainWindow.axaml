@@ -16,6 +16,23 @@
     </Design.DataContext>
 
     <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseMediumLowColor}" />
+            <Setter Property="Background" Value="{DynamicResource SystemChromeHighColor}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="0" />
+            <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseMediumColor}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Style>
+            <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseMediumColor}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Style>
+        </Style>
         <Style Selector="Button.playing">
             <Setter Property="Content">
                 <Template>
@@ -39,106 +56,196 @@
         </Style>
     </Window.Styles>
 
-    <ScrollViewer>
+    <ScrollViewer Padding="12">
         <StackPanel
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             Spacing="4">
 
             <Grid MaxHeight="400">
+                <Rectangle
+                    RadiusX="16"
+                    RadiusY="16"
+                    Stroke="{DynamicResource SystemBaseHighColor}"
+                    StrokeThickness="4"
+                    StrokeDashArray="16,8" 
+                    Width="256"
+                    Height="256"
+                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}"/>
                 <LucideIcon
                     Kind="Drone"
-                    Size="300"
+                    Size="170"
                     StrokeWidth="0.6"
-                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}" />
+                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}"
+                    RenderTransform="rotate(-30deg)"
+                    RenderTransformOrigin="50%,50%"/>
                 <Image
                     Source="{Binding ActiveImage}"
                     Stretch="Uniform"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center" />
-                <TextBlock Text="{Binding CurrentFrame}" Foreground="Yellow"/>
+                <TextBlock Text="{Binding CurrentFrame}" Foreground="Yellow" Margin="4" />
             </Grid>
 
             <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap" />
 
-            <StackPanel
-                Orientation="Horizontal"
-                Spacing="6"
+            <Grid
+                ColumnDefinitions="*,Auto"
                 IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                HorizontalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="Порог уверенности" />
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
-                        <Slider
-                            Value="{Binding Confidence, Mode=TwoWay}"
-                            Maximum="1.00"
-                            Minimum="0.00"
-                            TickFrequency="0.01"
-                            IsSnapToTickEnabled="True"
-                            Margin="0,0,8,0">
-                            <Slider.IsEnabled>
-                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                    <Binding Path="IsPaused" />
-                                    <Binding Path="IsVideoEnded" />
-                                </MultiBinding>
-                            </Slider.IsEnabled>
-                        </Slider>
-                        <TextBlock
-                            Grid.Column="1"
-                            Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"
-                            VerticalAlignment="Center" />
-                    </Grid>
+                Margin="6,2">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,-8">
+                    <Border
+                        Background="Transparent"
+                        ToolTip.Tip="Порог уверенности">
+                        <LucideIcon
+                            Kind="Crosshair"
+                            Size="16"
+                            RenderTransform="rotate(-20deg)"
+                            RenderTransformOrigin="50%,50%" />
+                    </Border>
+                    <Slider
+                        Grid.Column="1"
+                        Value="{Binding Confidence, Mode=TwoWay}"
+                        Maximum="1.00"
+                        Minimum="0.00"
+                        TickFrequency="0.01"
+                        IsSnapToTickEnabled="True"
+                        Margin="8,0"
+                        MinWidth="0"
+                        Width="NaN">
+                        <Slider.IsEnabled>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Path="IsPaused" />
+                                <Binding Path="IsVideoEnded" />
+                            </MultiBinding>
+                        </Slider.IsEnabled>
+                    </Slider>
+                    <TextBlock
+                        Grid.Column="2"
+                        Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"
+                        VerticalAlignment="Center" />
+                </Grid>
+                <StackPanel 
+                    Grid.Column="1"
+                    Spacing="6"
+                    Orientation="Horizontal"
+                    Margin="6,0,0,0">
+                    <Button
+                        Command="{Binding PauseCommand}"
+                        IsEnabled="{Binding !IsVideoEnded}"
+                        Classes.playing="{Binding !IsPaused}"
+                        Classes.paused="{Binding IsPaused}"
+                        IsVisible="{Binding IsVideoSelected}"
+                        Width="30"
+                        Height="30" />
+                    <Button
+                        Command="{Binding ReplayCommand}"
+                        Classes="video-ended"
+                        IsVisible="{Binding IsVideoSelected}"
+                        Width="30"
+                        Height="30" />
+                    <Button
+                        Content="{LucideIconContent ArrowRight, Size=16}"
+                        Command="{Binding DetectCommand}"
+                        HorizontalAlignment="Center"
+                        Width="30"
+                        Height="30" />
                 </StackPanel>
-                <Button
-                    Command="{Binding PauseCommand}"
-                    IsEnabled="{Binding !IsVideoEnded}"
-                    Classes.playing="{Binding !IsPaused}"
-                    Classes.paused="{Binding IsPaused}" 
-                    IsVisible="{Binding IsVideoSelected}"/>
-                <Button
-                    Command="{Binding ReplayCommand}"
-                    Classes="video-ended"
-                    IsVisible="{Binding IsVideoSelected}"/>
-                <Button
-                    Content="{LucideIconContent ArrowRight, Size=16}"
-                    Command="{Binding DetectCommand}"
-                    HorizontalAlignment="Center" />
-            </StackPanel>
+            </Grid>
 
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                 <Button
                     Command="{Binding LoadImageCommand}"
                     HorizontalAlignment="Center"
-                    Height="{Binding $self.Bounds.Width}"
-                    Width="144">
-                    <Button.Content>
-                        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
-                            <LucideIcon 
-                                Size="100" 
-                                Kind="ImageUp" 
-                                StrokeWidth="0.8"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="1" Text="Загрузить медиа"/>
-                        </Grid>
-                    </Button.Content>    
+                    Width="144"
+                    FontSize="13"
+                    CornerRadius="10"
+                    Tag="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}">
+                    <Button.Styles>
+                        <Style Selector="Button[Tag=True]">
+                            <Setter Property="Height" Value="{Binding $self.Bounds.Width}"/>
+                            <Setter Property="Content">
+                                <Template>
+                                    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
+                                        <LucideIcon
+                                            Size="100"
+                                            Kind="ImageUp"
+                                            StrokeWidth="0.8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                        <TextBlock Grid.Row="1" Text="Загрузить медиа" />
+                                    </Grid>
+                                </Template>
+                            </Setter>
+                        </Style>
+                        <Style Selector="Button[Tag=False]">
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Content">
+                                <Template>
+                                    <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Center">
+                                        <LucideIcon
+                                            Size="16"
+                                            Kind="ImageUp"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" 
+                                            Margin="6,0,4,0"/>
+                                        <TextBlock 
+                                            Grid.Column="1" 
+                                            Text="{Binding ImageName}" 
+                                            Margin="0,0,6,0"
+                                            TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                </Template>
+                            </Setter>
+                        </Style>
+                    </Button.Styles>
                 </Button>
                 <Button
                     Command="{Binding LoadModelCommand}"
                     HorizontalAlignment="Center"
-                    Height="{Binding $self.Bounds.Width}"
-                    Width="144">
-                    <Button.Content>
-                        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
-                            <LucideIcon 
-                                Size="100"
-                                Kind="FileBox" 
-                                StrokeWidth="0.8"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"/>
-                            <TextBlock Grid.Row="1" Text="Загрузить модель" />
-                        </Grid>
-                    </Button.Content>        
+                    Width="144"
+                    FontSize="13"
+                    CornerRadius="10"
+                    Tag="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}">
+                    <Button.Styles>
+                        <Style Selector="Button[Tag=True]">
+                            <Setter Property="Height" Value="{Binding $self.Bounds.Width}" />
+                            <Setter Property="Content">
+                                <Template>
+                                    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
+                                        <LucideIcon
+                                            Size="100"
+                                            Kind="FileBox"
+                                            StrokeWidth="0.8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" 
+                                            Margin="6,0"/>
+                                        <TextBlock Grid.Row="1" Text="Загрузить модель"/>
+                                    </Grid>
+                                </Template>
+                            </Setter>
+                        </Style>
+                        <Style Selector="Button[Tag=False]">
+                            <Setter Property="Height" Value="30" />
+                            <Setter Property="Content">
+                                <Template>
+                                    <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Center">
+                                        <LucideIcon
+                                            Size="16"
+                                            Kind="FileBox"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" 
+                                            Margin="6,0,4,0"/>
+                                        <TextBlock 
+                                            Grid.Column="1" 
+                                            Text="{Binding ModelName}" 
+                                            Margin="0,0,6,0"
+                                            TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                </Template>
+                            </Setter>
+                        </Style>
+                    </Button.Styles>
                 </Button>
             </StackPanel>
 
