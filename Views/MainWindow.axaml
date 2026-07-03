@@ -39,96 +39,27 @@
         </Style>
     </Window.Styles>
 
-    <Grid ColumnDefinitions="Auto,*">
-        <Border Padding="8" IsVisible="{Binding IsSidebarOpen}">
-            <Grid RowDefinitions="Auto,*">
-                <TextBlock
-                    Text="Конфигурация"
-                    FontSize="18"
-                    FontWeight="Bold" 
-                    Margin="40,4,0,8"/>
-                <ScrollViewer Grid.Row="1">
-                    <StackPanel IsEnabled="{Binding IsVideoEnded}">
-                        <TextBlock Text="Порог уверенности" />
-                        <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
-                            <Slider
-                                Value="{Binding Config.Confidence, Mode=TwoWay}"
-                                Maximum="1.00"
-                                Minimum="0.00"
-                                TickFrequency="0.01"
-                                IsSnapToTickEnabled="True"
-                                Margin="0,0,8,0" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="{Binding Config.Confidence, StringFormat='\{0:0.00\}'}"
-                                VerticalAlignment="Center" />
-                        </Grid>
-
-                        <TextBlock Text="Порог пересечения зон" />
-                        <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
-                            <Slider
-                                Value="{Binding Config.IoU, Mode=TwoWay}"
-                                Maximum="1.00"
-                                Minimum="0.00"
-                                TickFrequency="0.01"
-                                IsSnapToTickEnabled="True"
-                                Margin="0,0,8,0" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="{Binding Config.IoU, StringFormat='\{0:0.00\}'}"
-                                VerticalAlignment="Center" />
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock
-                                Text="Автоматическая ориентация"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Margin="0,0,16,0" />
-                            <ToggleSwitch
-                                Grid.Column="1"
-                                IsChecked="{Binding Config.ApplyAutoOrient, Mode=TwoWay}"
-                                OnContent="{x:Null}"
-                                OffContent="{x:Null}" />
-                        </Grid>
-
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock
-                                Text="Запрет параллельного вывода"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Margin="0,0,16,0" />
-                            <ToggleSwitch
-                                Grid.Column="1"
-                                IsChecked="{Binding Config.SuppressParallelInference, Mode=TwoWay}"
-                                OnContent="{x:Null}"
-                                OffContent="{x:Null}" />
-                        </Grid>
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
-        </Border>
+    <ScrollViewer>
         <StackPanel
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
-            Spacing="4"
-            Grid.Column="1">
+            Spacing="4">
             <Grid MaxHeight="400">
                 <LucideIcon
                     Kind="Drone"
                     Size="300"
                     StrokeWidth="0.6"
-                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}"/>
+                    IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNull}}" />
                 <Image
                     Source="{Binding ActiveImage}"
                     Stretch="Uniform"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center" />
             </Grid>
-            <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap"/>
-            <StackPanel 
-                Orientation="Horizontal" 
-                Spacing="6" 
+            <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap" />
+            <StackPanel
+                Orientation="Horizontal"
+                Spacing="6"
                 IsVisible="{Binding IsVideoLoaded}"
                 HorizontalAlignment="Center">
                 <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}" />
@@ -136,7 +67,7 @@
                     Command="{Binding PauseCommand}"
                     Classes.playing="{Binding !IsPaused}"
                     Classes.paused="{Binding IsPaused}"
-                    Classes.video-ended="{Binding IsVideoEnded}"/>
+                    Classes.video-ended="{Binding IsVideoEnded}" />
             </StackPanel>
             <Button
                 Content="Загрузить изображение"
@@ -150,16 +81,29 @@
                 Content="Найти бпла"
                 Command="{Binding DetectCommand}"
                 HorizontalAlignment="Center" />
+            <TextBlock Text="Порог уверенности" />
+            <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
+                <Slider
+                    Value="{Binding Confidence, Mode=TwoWay}"
+                    Maximum="1.00"
+                    Minimum="0.00"
+                    TickFrequency="0.01"
+                    IsSnapToTickEnabled="True"
+                    Margin="0,0,8,0">
+                    <Slider.IsEnabled>
+                        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                            <Binding Path="IsPaused"/>
+                            <Binding Path="IsVideoEnded"/>
+                        </MultiBinding>
+                    </Slider.IsEnabled>
+                </Slider>
+                <TextBlock
+                    Grid.Column="1"
+                    Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"
+                    VerticalAlignment="Center" />
+            </Grid>
         </StackPanel>
-        <Button
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
-            Content="{LucideIconContent Kind=SlidersHorizontal, Size=18}" 
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Margin="8,8"
-            Command="{Binding SwitchSidebarCommand}"/>
-    </Grid>
+    </ScrollViewer>
 
 </Window>
 

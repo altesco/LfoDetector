@@ -48,7 +48,7 @@ public partial class MainVM : ViewModelBase
 
     public bool CanDetect => ImagePath != null && ModelPath != null;
 
-    public ConfigurationVM Config { get; set; } = new();
+    [ObservableProperty] private double _confidence;
     public static readonly HttpClient Client = new ();
 
     [ObservableProperty] private bool _isSidebarOpen;
@@ -124,7 +124,7 @@ public partial class MainVM : ViewModelBase
                 ActiveImage = bitmap; // Свойство из твоей MainVM
             });
 
-            // Задержка ~30 FPS, чтобы видео не летело на первой космической скорости
+            // Задержка ~30 FPS, чтобы видео не летело
             Task.Delay(33).Wait();
         }
     }
@@ -181,11 +181,8 @@ public partial class MainVM : ViewModelBase
 
         var configuration = new YoloConfiguration
         {
-            Confidence = (float)Config.Confidence,
-            KeepAspectRatio = true,
-            SuppressParallelInference = Config.SuppressParallelInference,
-            IoU = (float)Config.IoU,
-            ApplyAutoOrient = Config.ApplyAutoOrient
+            Confidence = (float)Confidence,
+            KeepAspectRatio = true
         };
 
         YoloPredictorOptions options = new YoloPredictorOptions
