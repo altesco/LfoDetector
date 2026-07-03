@@ -65,9 +65,12 @@
                 <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}" />
                 <Button
                     Command="{Binding PauseCommand}"
+                    IsEnabled="{Binding !IsVideoEnded}"
                     Classes.playing="{Binding !IsPaused}"
                     Classes.paused="{Binding IsPaused}"
                     Classes.video-ended="{Binding IsVideoEnded}" />
+                <Button
+                    Command="{Binding ReplayCommand}"/>
             </StackPanel>
             <Button
                 Content="Загрузить изображение"
