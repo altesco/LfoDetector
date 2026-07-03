@@ -44,6 +44,7 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Center"
             Spacing="4">
+
             <Grid MaxHeight="400">
                 <LucideIcon
                     Kind="Drone"
@@ -55,56 +56,92 @@
                     Stretch="Uniform"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center" />
+                <TextBlock Text="{Binding CurrentFrame}" Foreground="Yellow"/>
             </Grid>
+
             <TextBlock Text="{Binding Error}" MaxWidth="400" TextWrapping="Wrap" />
+
             <StackPanel
                 Orientation="Horizontal"
                 Spacing="6"
-                IsVisible="{Binding IsVideoLoaded}"
+                IsVisible="{Binding ActiveImage, Converter={x:Static ObjectConverters.IsNotNull}}"
                 HorizontalAlignment="Center">
-                <TextBlock Text="{Binding CurrentFrame, StringFormat='Кадр: {0}'}" />
+                <StackPanel>
+                    <TextBlock Text="Порог уверенности" />
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
+                        <Slider
+                            Value="{Binding Confidence, Mode=TwoWay}"
+                            Maximum="1.00"
+                            Minimum="0.00"
+                            TickFrequency="0.01"
+                            IsSnapToTickEnabled="True"
+                            Margin="0,0,8,0">
+                            <Slider.IsEnabled>
+                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                    <Binding Path="IsPaused" />
+                                    <Binding Path="IsVideoEnded" />
+                                </MultiBinding>
+                            </Slider.IsEnabled>
+                        </Slider>
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </StackPanel>
                 <Button
                     Command="{Binding PauseCommand}"
                     IsEnabled="{Binding !IsVideoEnded}"
                     Classes.playing="{Binding !IsPaused}"
-                    Classes.paused="{Binding IsPaused}"
-                    Classes.video-ended="{Binding IsVideoEnded}" />
+                    Classes.paused="{Binding IsPaused}" 
+                    IsVisible="{Binding IsVideoSelected}"/>
                 <Button
-                    Command="{Binding ReplayCommand}"/>
+                    Command="{Binding ReplayCommand}"
+                    Classes="video-ended"
+                    IsVisible="{Binding IsVideoSelected}"/>
+                <Button
+                    Content="{LucideIconContent ArrowRight, Size=16}"
+                    Command="{Binding DetectCommand}"
+                    HorizontalAlignment="Center" />
             </StackPanel>
-            <Button
-                Content="Загрузить изображение"
-                Command="{Binding LoadImageCommand}"
-                HorizontalAlignment="Center" />
-            <Button
-                Content="Загрузить модель"
-                Command="{Binding LoadModelCommand}"
-                HorizontalAlignment="Center" />
-            <Button
-                Content="Найти бпла"
-                Command="{Binding DetectCommand}"
-                HorizontalAlignment="Center" />
-            <TextBlock Text="Порог уверенности" />
-            <Grid ColumnDefinitions="*,Auto" Margin="0,-8">
-                <Slider
-                    Value="{Binding Confidence, Mode=TwoWay}"
-                    Maximum="1.00"
-                    Minimum="0.00"
-                    TickFrequency="0.01"
-                    IsSnapToTickEnabled="True"
-                    Margin="0,0,8,0">
-                    <Slider.IsEnabled>
-                        <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                            <Binding Path="IsPaused"/>
-                            <Binding Path="IsVideoEnded"/>
-                        </MultiBinding>
-                    </Slider.IsEnabled>
-                </Slider>
-                <TextBlock
-                    Grid.Column="1"
-                    Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"
-                    VerticalAlignment="Center" />
-            </Grid>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                <Button
+                    Command="{Binding LoadImageCommand}"
+                    HorizontalAlignment="Center"
+                    Height="{Binding $self.Bounds.Width}"
+                    Width="144">
+                    <Button.Content>
+                        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
+                            <LucideIcon 
+                                Size="100" 
+                                Kind="ImageUp" 
+                                StrokeWidth="0.8"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Text="Загрузить медиа"/>
+                        </Grid>
+                    </Button.Content>    
+                </Button>
+                <Button
+                    Command="{Binding LoadModelCommand}"
+                    HorizontalAlignment="Center"
+                    Height="{Binding $self.Bounds.Width}"
+                    Width="144">
+                    <Button.Content>
+                        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Center">
+                            <LucideIcon 
+                                Size="100"
+                                Kind="FileBox" 
+                                StrokeWidth="0.8"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Text="Загрузить модель" />
+                        </Grid>
+                    </Button.Content>        
+                </Button>
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 
