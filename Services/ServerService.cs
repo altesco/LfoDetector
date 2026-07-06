@@ -13,7 +13,7 @@ public static class ServerService
         if (!File.Exists(serverPath))
             return;
 
-        var pythonPath = "/home/alexandr/RiderProjects/LfoDetector/.venv_cpu/bin/python3"; // тут как то надо поебаться с тем установлен питон в системе или нет
+        var pythonPath = "python3";
 
         try
         {
