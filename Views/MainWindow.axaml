@@ -107,7 +107,7 @@
                         Grid.Column="1"
                         Value="{Binding Confidence, Mode=TwoWay}"
                         Maximum="1.00"
-                        Minimum="0.00"
+                        Minimum="0.01"
                         TickFrequency="0.01"
                         IsSnapToTickEnabled="True"
                         Margin="8,0"

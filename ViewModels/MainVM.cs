@@ -55,7 +55,7 @@ public partial class MainVM : ViewModelBase
 
     public bool CanDetect => ImagePath != null && ModelPath != null;
 
-    [ObservableProperty] private double _confidence;
+    [ObservableProperty] private double _confidence = 0.5;
 
     public static readonly HttpClient Client = new();
 

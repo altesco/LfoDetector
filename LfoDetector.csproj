@@ -11,7 +11,9 @@
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
     <None Include="Services\model_loader.py" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>2
+    <None Include="requirements.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="README.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.17" />
