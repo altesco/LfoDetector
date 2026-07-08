@@ -112,14 +112,8 @@
                         IsSnapToTickEnabled="True"
                         Margin="8,0"
                         MinWidth="0"
-                        Width="NaN">
-                        <Slider.IsEnabled>
-                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                <Binding Path="IsPaused" />
-                                <Binding Path="IsVideoEnded" />
-                            </MultiBinding>
-                        </Slider.IsEnabled>
-                    </Slider>
+                        Width="NaN"
+                        IsEnabled="{Binding !IsVideoProcessing}"/>
                     <TextBlock
                         Grid.Column="2"
                         Text="{Binding Confidence, StringFormat='\{0:0.00\}'}"

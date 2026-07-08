@@ -27,6 +27,7 @@ public partial class MainVM : ViewModelBase
     [ObservableProperty] private bool _isPaused;
     [ObservableProperty] private bool _isVideoEnded = true;
     [ObservableProperty] private bool _isVideoSelected;
+    [ObservableProperty] private bool _isVideoProcessing;
 
     public string? ImagePath
     {
@@ -277,7 +278,12 @@ public partial class MainVM : ViewModelBase
     }
 
     [RelayCommand]
-    private void Pause() => IsPaused = !IsPaused;
+    private void Pause()
+    {
+        IsPaused = !IsPaused;
+        if (IsVideoLoaded)
+            IsVideoProcessing = !IsVideoProcessing;
+    }
 
     private async Task ProcessImage(string imagePath, string modelPath, YoloPredictorOptions options)
     {
@@ -297,6 +303,8 @@ public partial class MainVM : ViewModelBase
     private async Task ProcessVideo(string imagePath, string modelPath, YoloPredictorOptions options,
         CancellationToken token)
     {
+        IsVideoProcessing = true;
+
         using var predictor = new YoloPredictor(modelPath, options);
         using var capture = new VideoCapture(imagePath);
         using var matFrame = new Mat();
@@ -366,5 +374,7 @@ public partial class MainVM : ViewModelBase
                 break;
             }
         }
+
+        IsVideoProcessing = false;
     }
 }
